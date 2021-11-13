@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     public float runSpeed;
     public float jumpSpeed;
     public float douleJumpSpeed;
+    public float climbSpeed;
 
     public bool faceRight;
 
@@ -15,14 +16,25 @@ public class PlayerController : MonoBehaviour
     private BoxCollider2D myFeet;
 
     private bool isGround;
+    private bool isOneWayPlatform;
     private bool canDoubleJump;
+
+    private bool isLadder;
+    private bool isClimbing;
+    private bool isJumping;
+    private bool isDoubleJumping;
+    private bool isFalling;
+    private bool isDoubleFalling;
+
+    private float playerGravity;
 
     // Start is called before the first frame update
     void Start()
     {
         myRigidBody = GetComponent<Rigidbody2D>();
         myAnimator = GetComponent<Animator>();
-        myFeet = GetComponent<BoxCollider2D>();      
+        myFeet = GetComponent<BoxCollider2D>();
+        playerGravity = myRigidBody.gravityScale;
     }
 
     // Update is called once per frame
@@ -31,13 +43,16 @@ public class PlayerController : MonoBehaviour
         if (GameController.PLAYALIVE)
         {
             Jump();
+            Climb();
             Flip();
             Run();
             //Attack();
             checkGrounded();
+            oneWayPlatform();
+            checkLadder();
             SwitchAnimation();
+            CheckAirStatus();
         }
-
     }
 
     void Flip()
@@ -83,6 +98,40 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void Climb()
+    {
+
+        if (isLadder)
+        {
+            float moveY = Input.GetAxis("Vertical");
+            if (moveY > 0.5f || moveY < -0.5f)
+            {
+                myAnimator.SetBool("Climbing", true);
+                myRigidBody.gravityScale = 0.0f;
+                myRigidBody.velocity = new Vector2(myRigidBody.velocity.x, moveY * this.climbSpeed);
+            }
+            else
+            {
+                if (isJumping || isFalling || isDoubleFalling || isDoubleJumping)
+                {
+                    myAnimator.SetBool("Climbing", false);
+                }
+
+                else
+                {
+                    myAnimator.SetBool("Climbing", false);
+                    myRigidBody.velocity= new Vector2(myRigidBody.velocity.x, 0);
+                }
+            }
+        }
+        else 
+        {
+            myAnimator.SetBool("Climbing", false);
+            myRigidBody.gravityScale = playerGravity;
+        }
+    
+    }
+
     void SwitchAnimation()
     {
         myAnimator.SetBool("Idle", false);
@@ -118,8 +167,48 @@ public class PlayerController : MonoBehaviour
     void checkGrounded()
     {
         isGround = myFeet.IsTouchingLayers(LayerMask.GetMask("Ground")) ||
-                   myFeet.IsTouchingLayers(LayerMask.GetMask("MovingPlatform"));
+                   myFeet.IsTouchingLayers(LayerMask.GetMask("MovingPlatform")) ||
+                   myFeet.IsTouchingLayers(LayerMask.GetMask("OneWayPlatform"));
         
+        isOneWayPlatform = myFeet.IsTouchingLayers(LayerMask.GetMask("OneWayPlatform"));
+
+    }
+
+    void checkLadder()
+    {
+        isLadder = myFeet.IsTouchingLayers(LayerMask.GetMask("Ladder"));
+    }
+
+    void oneWayPlatform()
+    {
+        if (isGround && this.gameObject.layer != LayerMask.NameToLayer("Player"))
+        {
+            this.gameObject.layer = LayerMask.NameToLayer("Player");
+        }
+        if (isOneWayPlatform && Input.GetAxis("Vertical") < -0.1f)
+        {
+            this.gameObject.layer = LayerMask.NameToLayer("OneWayPlatform");
+            Invoke("restorePlayerLayer", 0.5f);
+        }
+       
+    }
+
+    void restorePlayerLayer()
+    {
+        if (!isGround && gameObject.layer != LayerMask.NameToLayer("Player"))
+        {
+            this.gameObject.layer = LayerMask.NameToLayer("Player");
+        }
+    
+    }
+
+    void CheckAirStatus()
+    {
+        isJumping = myAnimator.GetBool("Jump");
+        isDoubleJumping = myAnimator.GetBool("DoubleJump");
+        isFalling = myAnimator.GetBool("Fall");
+        isDoubleFalling = myAnimator.GetBool("DoubleFall");
+        isClimbing = myAnimator.GetBool("Climbing");
     }
 
     void Attack()
