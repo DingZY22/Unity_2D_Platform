@@ -7,6 +7,8 @@ public abstract class Enemy : MonoBehaviour
     public int health;
     public int damage;
     public GameObject bloodEffect;
+    public GameObject dropCoin;
+    public GameObject floatPoint;
 
     public float flashTime;
 
@@ -34,12 +36,15 @@ public abstract class Enemy : MonoBehaviour
     {
         if (health <= 0)
         {
+            Instantiate(dropCoin, transform.position, Quaternion.identity);
             Destroy(gameObject);
         }
     }
 
     public void TakeDamage(int d)
     {
+        GameObject gb = Instantiate(floatPoint, transform.position, Quaternion.identity) as GameObject;
+        gb.transform.GetChild(0).GetComponent<TextMesh>().text = d.ToString();
         health -= d;
         FlashColor(flashTime);
         Instantiate(bloodEffect, transform.position, Quaternion.identity);

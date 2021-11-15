@@ -23,8 +23,6 @@ public class MovingPlatform : MonoBehaviour
     void Update()
     {
         moving();
-
-
     }
 
     void moving()
@@ -47,21 +45,23 @@ public class MovingPlatform : MonoBehaviour
         }
 
     }
+    
 
-    private void OnTriggerEnter2D(Collider2D standObject)
+    private void OnTriggerEnter2D(Collider2D Object)
     {
-
-        if (standObject.CompareTag("Player") && standObject.GetType().ToString() == "UnityEngine.BoxCollider2D")
+        if (Object.CompareTag("Player") &&
+            (Object.GetType().ToString() == "UnityEngine.BoxCollider2D"))
         {
-            standObject.gameObject.transform.parent = this.gameObject.transform;
+            Debug.Log("Trigger");
+            Object.gameObject.transform.parent = this.gameObject.transform;
         }        
     }
 
-    private void OnTriggerExit2D(Collider2D standObject)
+    private void OnTriggerExit2D(Collider2D Object)
     {
-        if (standObject.CompareTag("Player") && standObject.GetType().ToString() == "UnityEngine.BoxCollider2D")
+        if (Object.CompareTag("Player") && Object.GetType().ToString() == "UnityEngine.BoxCollider2D")
         {
-            standObject.gameObject.transform.parent = playerDefaultTransform;
+            Object.gameObject.transform.parent = playerDefaultTransform;
         }
     }
 }

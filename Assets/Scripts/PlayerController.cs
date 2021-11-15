@@ -10,6 +10,8 @@ public class PlayerController : MonoBehaviour
     public float climbSpeed;
 
     public bool faceRight;
+    private bool canDoubleJump;
+    private bool isLadder;
 
     private Rigidbody2D myRigidBody;
     private Animator myAnimator;
@@ -17,15 +19,16 @@ public class PlayerController : MonoBehaviour
 
     private bool isGround;
     private bool isOneWayPlatform;
-    private bool canDoubleJump;
-
-    private bool isLadder;
-    private bool isClimbing;
+    private enum playerState { onGround, onOneWayPlatform, onMovingPlatform }
+    [SerializeField]private playerState state;
+    
     private bool isJumping;
     private bool isDoubleJumping;
     private bool isFalling;
     private bool isDoubleFalling;
+    private bool isClimbing;
 
+    public  float restoreTime;
     private float playerGravity;
 
     // Start is called before the first frame update
@@ -35,6 +38,7 @@ public class PlayerController : MonoBehaviour
         myAnimator = GetComponent<Animator>();
         myFeet = GetComponent<BoxCollider2D>();
         playerGravity = myRigidBody.gravityScale;
+
     }
 
     // Update is called once per frame
@@ -46,12 +50,12 @@ public class PlayerController : MonoBehaviour
             Climb();
             Flip();
             Run();
-            //Attack();
             checkGrounded();
             oneWayPlatform();
             checkLadder();
             SwitchAnimation();
             CheckAirStatus();
+
         }
     }
 
@@ -100,36 +104,41 @@ public class PlayerController : MonoBehaviour
 
     void Climb()
     {
-
+        //Bug: Player on top of the ladder still able to climb.
         if (isLadder)
         {
-            float moveY = Input.GetAxis("Vertical");
-            if (moveY > 0.5f || moveY < -0.5f)
+            myAnimator.SetBool("ClimbingStay", true);
+            myRigidBody.gravityScale = 0.0f;
+            if (isClimbing)
             {
                 myAnimator.SetBool("Climbing", true);
-                myRigidBody.gravityScale = 0.0f;
-                myRigidBody.velocity = new Vector2(myRigidBody.velocity.x, moveY * this.climbSpeed);
+                myRigidBody.velocity = new Vector2(myRigidBody.velocity.x, Input.GetAxis("Vertical") * this.climbSpeed);
             }
             else
             {
+                //From other actions to the middle of the ladder
                 if (isJumping || isFalling || isDoubleFalling || isDoubleJumping)
                 {
+                    
                     myAnimator.SetBool("Climbing", false);
+                    myRigidBody.velocity = new Vector2(myRigidBody.velocity.x, Input.GetAxis("Vertical") * this.climbSpeed);
                 }
-
+                //On top of bottom of the ladder
                 else
                 {
                     myAnimator.SetBool("Climbing", false);
-                    myRigidBody.velocity= new Vector2(myRigidBody.velocity.x, 0);
+                    myAnimator.SetBool("ClimbingStay", false);
+                    myRigidBody.velocity= new Vector2(myRigidBody.velocity.x, 0.0f);
                 }
             }
         }
         else 
-        {
+        {           
             myAnimator.SetBool("Climbing", false);
+            myAnimator.SetBool("ClimbingStay", false);
+            myAnimator.SetBool("Fall", true);
             myRigidBody.gravityScale = playerGravity;
-        }
-    
+        }    
     }
 
     void SwitchAnimation()
@@ -188,7 +197,7 @@ public class PlayerController : MonoBehaviour
         if (isOneWayPlatform && Input.GetAxis("Vertical") < -0.1f)
         {
             this.gameObject.layer = LayerMask.NameToLayer("OneWayPlatform");
-            Invoke("restorePlayerLayer", 0.5f);
+            Invoke("restorePlayerLayer", restoreTime);
         }
        
     }
@@ -208,15 +217,9 @@ public class PlayerController : MonoBehaviour
         isDoubleJumping = myAnimator.GetBool("DoubleJump");
         isFalling = myAnimator.GetBool("Fall");
         isDoubleFalling = myAnimator.GetBool("DoubleFall");
-        isClimbing = myAnimator.GetBool("Climbing");
+        isClimbing = Input.GetAxis("Vertical")>0.8f || Input.GetAxis("Vertical")<-0.8f;
+
     }
 
-    void Attack()
-    {
-        if (Input.GetButtonDown("Attack"))
-        {
-            myAnimator.SetTrigger("Attack");
-        }
-    }
 
 }

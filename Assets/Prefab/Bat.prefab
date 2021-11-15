@@ -73,6 +73,7 @@ GameObject:
   - component: {fileID: 4876122323647403633}
   - component: {fileID: 4876122323647403637}
   - component: {fileID: 4876122323647403638}
+  - component: {fileID: 692769710908789795}
   m_Layer: 0
   m_Name: EnemyBat
   m_TagString: Enemy
@@ -205,6 +206,8 @@ MonoBehaviour:
   health: 10
   damage: 1
   bloodEffect: {fileID: 4584740341027403069, guid: feffc83fdf68e184aa8b119779f312d9, type: 3}
+  dropCoin: {fileID: 0}
+  floatPoint: {fileID: 0}
   flashTime: 0.2
   sr: {fileID: 0}
   originalColor: {r: 0, g: 0, b: 0, a: 0}
@@ -213,6 +216,27 @@ MonoBehaviour:
   movePos: {fileID: 4876122323015014881}
   leftDownPos: {fileID: 4876122323609157101}
   rightUpPos: {fileID: 4876122324887321397}
+--- !u!50 &692769710908789795
+Rigidbody2D:
+  serializedVersion: 4
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4876122323647403634}
+  m_BodyType: 1
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDrag: 0
+  m_AngularDrag: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_Interpolate: 0
+  m_SleepingMode: 0
+  m_CollisionDetection: 1
+  m_Constraints: 4
 --- !u!1 &4876122324887321398
 GameObject:
   m_ObjectHideFlags: 0
